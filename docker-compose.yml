@@ -7,6 +7,7 @@ services:
       context: elasticsearch/
     volumes:
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - /docker/esdata:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -36,11 +37,25 @@ services:
     volumes:
       - ./kibana/config/:/usr/share/kibana/config:ro
     ports:
-      - "5601:5601"
+      - 5601
     networks:
       - elk
+    environment:
+      - VIRTUAL_HOST=localhost
     depends_on:
       - elasticsearch
+
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "4242:80"
+      - "443:443"
+    networks:
+      - elk
+    volumes:
+      - ./kibana/config/htpasswd:/etc/nginx/htpasswd:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+
 
 networks:
 
